@@ -22,8 +22,7 @@ first_level_model       --- API for first level fMRI model estimation
 second_level_model      --- API for second level fMRI model estimation
 contrasts               --- API for contrast computation and manipulations
 thresholding            --- Utilities for cluster-level statistical results
-reporting               --- Utilities for creating reports & plotting data
-utils                   --- Miscellaneous utilities
+utils                   --- Miscelaneous utilities
 """
 
 import sys
