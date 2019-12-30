@@ -40,7 +40,7 @@ def fdr_threshold(z_vals, alpha):
 
 
 def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
-                  height_control='fpr', cluster_threshold=0):
+                  height_control='fpr', cluster_threshold=0, two_sided=True):
     """ Compute the required threshold level and return the thresholded map
 
     Parameters
@@ -67,10 +67,16 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
         false positive control meaning of cluster forming
         threshold: 'fpr'|'fdr'|'bonferroni'\|None
 
-    cluster_threshold : float, optional
+    cluster_threshold: float, optional
         cluster size threshold. In the returned thresholded map,
         sets of connected voxels (`clusters`) with size smaller
         than this number will be removed.
+
+    two_sided: Bool, optional,
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+        In that case, alpha is corrected by a factor of 2.
+        Defaults to True.
 
     Returns
     -------
@@ -88,12 +94,18 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     # Check that height_control is correctly specified
     if height_control not in ['fpr', 'fdr', 'bonferroni', None]:
         raise ValueError(
-            "height control should be one of ['fpr', 'fdr', 'bonferroni', None]")
+            "height control should be one of "
+            "['fpr', 'fdr', 'bonferroni', None]")
 
+    # if two-sided, correct alpha by a factor of 2
+    alpha_ = alpha
+    if two_sided:
+        alpha_ = alpha / 2
+    
     # if height_control is 'fpr' or None, we don't need to look at the data
     # to compute the threhsold
     if height_control == 'fpr':
-        threshold = norm.isf(alpha)
+        threshold = norm.isf(alpha_)
 
     # In this case, and is stat_img is None, we return
     if stat_img is None:
@@ -101,7 +113,7 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
             return None, threshold
         else:
             raise ValueError(
-                'Map_threshold requires stat_img not to be None'
+                'map_threshold requires stat_img not to be None'
                 'when the heigh_control procedure is bonferroni or fdr')
     
     # Masking
@@ -113,17 +125,24 @@ def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     n_voxels = np.size(stats)
 
     # Thresholding
+    if two_sided:
+        # replace stats by their absolute value after storing the sign
+        sign = np.sign(stats)
+        stats = np.abs(stats)
+
     if height_control == 'fdr':
-        threshold = fdr_threshold(stats, alpha)
+        threshold = fdr_threshold(stats, alpha_)
     elif height_control == 'bonferroni':
-        threshold = norm.isf(alpha / n_voxels)
+        threshold = norm.isf(alpha_ / n_voxels)
     stats *= (stats > threshold)
+    if two_sided:
+        stats *= sign
 
     # embed it back to 3D grid
     stat_map = get_data(masker.inverse_transform(stats))
 
     # Extract connected components above threshold
-    label_map, n_labels = label(stat_map > threshold)
+    label_map, n_labels = label(np.abs(stat_map) > threshold)
     labels = label_map[get_data(masker.mask_img_) > 0]
 
     for label_ in range(1, n_labels + 1):
