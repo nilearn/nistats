@@ -39,3 +39,42 @@ jobs:
       testResultsFiles: '**/test-results.xml'
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
+
+
+- job: 'test_retirement_warning_with_nilearn_07x'
+  pool:
+    vmImage: 'ubuntu-18.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      set -e
+      python -m pip install --upgrade pip
+      pip install --prefer-binary setuptools wheel
+      pip install git+https://github.com/nilearn/nilearn.git@master\#egg\=nilearn
+    displayName: 'Install Nilearn master (>=0.7.x) & dependencies for building Nistats'
+
+  - script: |
+      set -e
+      python setup.py sdist bdist_wheel --universal
+    displayName: 'Build Nistats'
+
+  - script: |
+      set -e
+      pip install dist/nistats-0.0.1rc0-*-none-any.whl
+      warn_count=$(python -c "import nistats; from nistats.first_level_model import FirstLevelModel" |& grep -c "Using Nistats with Nilearn versions >= 0.7.0")
+      echo $warn_count
+      if [ $warn_count -ne 1 ]
+        then
+          exit 1
+      fi
+    displayName: 'Install Nistats & check for correct warnings, raised only once'

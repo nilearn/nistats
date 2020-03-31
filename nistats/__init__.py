@@ -26,42 +26,49 @@ reporting               --- Utilities for creating reports & plotting data
 utils                   --- Miscellaneous utilities
 """
 
-import sys
 import warnings
+from distutils.version import LooseVersion
+
+import nilearn
 
 from .version import _check_module_dependencies, __version__
 
 
-def _py2_deprecation_warning():
-    py2_warning = ('Python2 support is deprecated and will be removed in '
-                   'a future release. Consider switching to Python3.')
-    warnings.filterwarnings('once', message=py2_warning)
-    warnings.warn(message=py2_warning,
-                  category=DeprecationWarning,
-                  stacklevel=3,
-                  )
+def _nistats_deprecation_warning():
+    warning_msg = (
+        '\n\n'
+        ' | Starting with Nilearn 0.7.0, all Nistats functionality '
+        "has been incorporated into Nilearn's stats & reporting modules.\n"
+        ' | Nistats package will no longer be updated or maintained.\n')
+    warnings.filterwarnings('once', message=warning_msg)
+    warnings.warn(message=warning_msg,
+                  category=FutureWarning,
+                  stacklevel=4)
 
 
-def _py34_deprecation_warning():
-    py34_warning = ('Python 3.4 support is deprecated and will be removed in '
-                    'a future release. '
-                    'Consider switching to Python 3.6 or 3.7.'
-                    )
-    warnings.filterwarnings('once', message=py34_warning)
-    warnings.warn(message=py34_warning,
-                  category=DeprecationWarning,
-                  stacklevel=3,
-                  )
+def _nistats_redundant_warning():
+    warning_msg = (
+        '\n\n'
+        ' | Using Nistats with Nilearn versions >= 0.7.0 '
+        'is redundant and potentially conflicting.\n'
+        ' | Nilearn versions 0.7.0 and up offer all the functionality of Nistats '
+        'as well the latest features and fixes.\n'
+        ' | We strongly recommend uninstalling Nistats and using '
+        "Nilearn's stats & reporting modules.\n")
+    warnings.filterwarnings('once', message=warning_msg)
+    warnings.warn(message=warning_msg,
+                  stacklevel=4)
 
 
-def _python_deprecation_warnings():
-    if sys.version_info.major == 2:
-        _py2_deprecation_warning()
-    elif sys.version_info.major == 3 and sys.version_info.minor == 4:
-        _py34_deprecation_warning()
+def _nistats_retirement_warning():
+    nilearn_version = LooseVersion(nilearn.__version__)
+    if nilearn_version.version[1] > 6:
+        _nistats_redundant_warning()
+    else:
+        _nistats_deprecation_warning()
 
 
 _check_module_dependencies()
-_python_deprecation_warnings()
+_nistats_retirement_warning()
 
 __all__ = ['__version__', 'datasets', 'design_matrix']

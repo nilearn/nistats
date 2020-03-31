@@ -1,3 +1,15 @@
+0.1.0rc
+=======
+
+.. warning::
+
+	This is the LAST release of Nistats.
+
+	| All Nistats functionality has been incorporated into Nilearn.
+	| It will be available as part of Nilearn 0.7.0.
+	| All future development will be done in Nilearn.
+
+
 0.1.0b2
 =======
 

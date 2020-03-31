@@ -1,37 +1,29 @@
 import sys
 import warnings
 
-
 # import time warnings don't interfere with warning's tests
 import pytest
 
 with warnings.catch_warnings(record=True):
-    from nistats import _py34_deprecation_warning
-    from nistats import _py2_deprecation_warning
-    from nistats import _python_deprecation_warnings
+    from nistats import (_nistats_deprecation_warning,
+                         _nistats_redundant_warning,
+                         )
 
 
-def test_py2_deprecation_warning():
-    with pytest.warns(DeprecationWarning,
-                      match='Python2 support is deprecated'):
-        _py2_deprecation_warning()
+def test_nistats_deprecation_warning():
+    with pytest.warns(
+        FutureWarning,
+        match='\n\n | Starting with Nilearn 0.7.0, all Nistats functionality ',
+        ):
+        _nistats_deprecation_warning()
 
 
-def test_py34_deprecation_warning():
-    with pytest.warns(DeprecationWarning,
-                      match='Python 3.4 support is deprecated'):
-        _py34_deprecation_warning()
-
-
-def test_python_deprecation_warnings():
-    if sys.version_info.major == 2:
-        with pytest.warns(DeprecationWarning,
-                          match='Python2 support is deprecated'):
-            _python_deprecation_warnings()
-    elif sys.version_info.major == 3 and sys.version_info.minor == 4:
-        with pytest.warns(DeprecationWarning,
-                          match='Python 3.4 support is deprecated'):
-            _python_deprecation_warnings()
+def test_nistats_redundant_warning():
+    with pytest.warns(
+        UserWarning,
+        match='\n\n | Using Nistats with Nilearn versions >= 0.7.0 ',
+        ):
+        _nistats_redundant_warning()
 
 
 def test_warnings_filter_scope():
