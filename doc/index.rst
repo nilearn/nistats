@@ -3,13 +3,20 @@
     We are putting the title as a raw HTML so that it doesn't appear in
     the contents
 
+.. warning::
+
+	| **Nistats is RETIRED and will no longer receive fixes and updates!**
+	| Its latest release, 0.0.1rc will eb the last release, available via PyPI.
+	| Its functionality will now be available in the release of `Nilearn`_ 0.7.0 in late 2020.
+
+.. _Nilearn: http://nilearn.github.io/
+
 .. container:: index-paragraph
 
     Nistats is a Python module for **fast and easy functional MRI statistical analysis**.
 
     It leverages Nilearn, Nibabel and other Python libraries from the Python
     scientific stack like Scipy, Numpy and Pandas.
-
 
 .. Here we are building the carousel
 
